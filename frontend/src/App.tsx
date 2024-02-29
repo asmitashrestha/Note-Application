@@ -11,8 +11,10 @@ import Notes from "./components/Notes";
 import AddNotes from "./components/AddNotes";
 import Settings from "./pages/Settings";
 import EditNote from "./pages/EditNote";
+import { useAuthStore } from "../store/store";
 
 const App = () => {
+  const { isLoggedIn } = useAuthStore();
   return (
     <div>
       <Routes>
@@ -20,12 +22,17 @@ const App = () => {
         <Route path={"/signup"} element={<SignUpPage />} />
         <Route path={"/login"} element={<LoginPage />} />
         <Route path={"/reset-password"} element={<ResetPassword />} />
-        <Route path="/change-password"  element={<ChangePassword/>}/>
-        <Route path={"/notes"} element={<Notes/>}/>
-        <Route path={"/add-notes"} element={<AddNotes/>}/>
-        <Route path={"/settings"} element={<Settings/>}/>
+        <Route path="/change-password" element={<ChangePassword />} />
+        {isLoggedIn && (
+          <>
+            <Route path={"/notes"} element={<Notes />} />
+            <Route path={"/add-notes"} element={<AddNotes />} />
+          </>
+        )}
+
+        <Route path={"/settings"} element={<Settings />} />
         {/* Remove onClose and onUpdate props */}
-        <Route path="/edit-note" element={<EditNote noteId={undefined} />}/>
+        <Route path="/edit-note" element={<EditNote noteId={undefined} />} />
       </Routes>
     </div>
   );

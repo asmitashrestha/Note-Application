@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import me from "../assets/person.png";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify";
+
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -14,42 +13,30 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/api/user/login",
-  //       formData
-  //     );
-  //     console.log(response);
-  //     if(response){
-  //      toast.success("Registration Successful");
-  //      navigate('/'); 
-  //     }else{
-  //       toast.error("Error occurred");
-  //     }
-       
-  //   } catch (error) {
-  //     console.log(error);
-      
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/user/login",
-        formData
+      const response = await fetch(
+        "http://localhost:5000/api/user/login",{
+          method:"POST",
+          headers:{
+            Accept:"application/json",
+            "Content-Type":"application/json",
+          },
+          body:JSON.stringify(formData),
+        }
+
       );
-      if (response.data.userId) {
-        // Store userId in local storage
-        localStorage.setItem('userId', response.data.userId);
-        toast.success("Login Successful");
-        navigate('/');
-      } else {
-        toast.error("Error occurred");
+      const data = await response.json()
+      console.log("Token",data.token);
+      
+      if(response.ok && data.token){
+        localStorage.setItem("token",data.token)
+        navigate('/')
+      }else{
+        console.error("Login failed",data.error)
       }
+      return await response.json()
     } catch (error) {
       console.log(error);
     }

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import me from "../assets/person.png";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
@@ -13,86 +11,37 @@ const SignUpPage = () => {
     password: "",
     password_confirmation: "",
   });
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/api/user/register",
-  //       formData
-  //     );
-  //     console.log(response);
-  //     if(response){
-  //      toast.success("Registration Successful");
-  //      navigate('/'); 
-  //     }else{
-  //       toast.error("Error occurred");
-  //     }
-       
-  //   } catch (error) {
-  //     console.log(error);
-      
-  //   }
-  // };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/api/user/register",
-  //       formData
-  //     );
-  //     console.log(response.data.userId);
-      
-  //     if (response.data.userId) {
-  //       // Store userId in local storage
-  //       localStorage.setItem('userId', response.data.userId);
-  //       toast.success("Registration Successful");
-  //       navigate('/');
-  //     } else {
-  //       toast.error("Error occurred");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch("http://localhost:5000/api/user/register", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to register user');
+        throw new Error("Failed to register user");
       }
-  
+
       const responseData = await response.json();
       console.log(responseData.userId);
-  
-      if (responseData.userId) {
-        // Store userId in local storage
-        localStorage.setItem('userId', responseData.userId);
-        toast.success("Registration Successful");
-        navigate('/');
-      } else {
-        toast.error("Error occurred");
-      }
+      navigate("/");
+      return responseData;
     } catch (error) {
-      console.error("Error occurred during registration:", error);
+      console.log("Error", error);
     }
   };
-  
+
   return (
     <div className="bg-gray-200 h-full mt-7">
       <div className="flex h-[500px] w-[1100px] px-[10px] py-5 ml-[4.5rem]">
@@ -101,8 +50,12 @@ const SignUpPage = () => {
             <img src={me} className="rounded-sm" alt="Person" />
           </div>
           <div className="text-center  font-sans">
-            <p className="font-bold text-xl text-gray-800">Let's get you set up</p>
-            <p className="leading-10 font-semibold text-gray-800">It should only take you a minute to connect</p>
+            <p className="font-bold text-xl text-gray-800">
+              Let's get you set up
+            </p>
+            <p className="leading-10 font-semibold text-gray-800">
+              It should only take you a minute to connect
+            </p>
           </div>
         </div>
         <div className="bg-black  h-[500px] w-[600px] ">
@@ -116,7 +69,10 @@ const SignUpPage = () => {
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="flex justify-between">
                   <div>
-                    <label htmlFor="firstname" className="block text-sm font-medium leading-4 text-white">
+                    <label
+                      htmlFor="firstname"
+                      className="block text-sm font-medium leading-4 text-white"
+                    >
                       Firstname
                     </label>
                     <div className="mt-1">
@@ -134,7 +90,10 @@ const SignUpPage = () => {
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium leading-4 text-white">
+                    <label
+                      htmlFor="lastName"
+                      className="block text-sm font-medium leading-4 text-white"
+                    >
                       Lastname
                     </label>
                     <div className="mt-1">
@@ -152,7 +111,10 @@ const SignUpPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium leading-4 text-white">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium leading-4 text-white"
+                  >
                     Email address
                   </label>
                   <div className="mt-1">
@@ -171,7 +133,10 @@ const SignUpPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="block text-sm font-medium leading-4 text-white">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium leading-4 text-white"
+                    >
                       Password
                     </label>
                   </div>
@@ -191,7 +156,10 @@ const SignUpPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center justify-between">
-                    <label htmlFor="password_confirmation" className="block text-sm font-medium leading-4 text-white">
+                    <label
+                      htmlFor="password_confirmation"
+                      className="block text-sm font-medium leading-4 text-white"
+                    >
                       Password Confirmation
                     </label>
                   </div>
