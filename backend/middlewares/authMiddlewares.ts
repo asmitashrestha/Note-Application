@@ -12,6 +12,8 @@ export interface AuthenticatedRequest extends Request {
 export const checkUserAuth = async (req: AuthenticatedRequest, res: Response, next: Function) => {
   let token;
   const { authorization } = req.headers;
+  console.log("Token",token);
+  
 
   if (authorization && authorization.startsWith('Bearer')) {
     try {
@@ -19,8 +21,7 @@ export const checkUserAuth = async (req: AuthenticatedRequest, res: Response, ne
 
       // verify token
       const { userId } = jwt.verify(token, process.env.JWT_SECRET_KEY) 
-      // as { userId: number };
-      // console.log('User id:',userId);
+      
      req.userId = userId
 
       // GET USER FROM TOKEN

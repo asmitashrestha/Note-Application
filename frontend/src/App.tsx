@@ -23,12 +23,9 @@ const App = () => {
         <Route path={"/login"} element={<LoginPage />} />
         <Route path={"/reset-password"} element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
-        {isLoggedIn && (
-          <>
+       
             <Route path={"/notes"} element={<Notes />} />
             <Route path={"/add-notes"} element={<AddNotes />} />
-          </>
-        )}
 
         <Route path={"/settings"} element={<Settings />} />
         {/* Remove onClose and onUpdate props */}

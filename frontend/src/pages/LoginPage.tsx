@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import me from "../assets/person.png";
 import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -13,7 +14,15 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+ 
+
+  useEffect(()=>{
+    const userData = localStorage.getItem("userData")
+    if(userData) {
+      setIsLoggedIn(true)
+    }
+  })
+ const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch(
@@ -25,24 +34,18 @@ const LoginPage = () => {
           },
           body:JSON.stringify(formData),
         }
-
       );
+    
       const data = await response.json()
-      console.log("Token",data.token);
-      
-      if(response.ok && data.token){
-        localStorage.setItem("token",data.token)
-        navigate('/')
-      }else{
-        console.error("Login failed",data.error)
-      }
-      return await response.json()
+      console.log("Token",data.token);  
+      setIsLoggedIn(true)
+      localStorage.setItem("userData",JSON.stringify(data))
+      navigate('/notes')
     } catch (error) {
       console.log(error);
     }
   };
   
-
   return (
     <div className="bg-gray-200 h-full">
       <div className="flex  h-[500px] w-[1100px] px-[10px] py-5 ml-[4.5rem]">
@@ -115,6 +118,7 @@ const LoginPage = () => {
                 </div>
 
                 <div>
+                
                   <button
                     type="submit"
                     className="flex w-full justify-center rounded-md bg-cyan-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-cyan-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"

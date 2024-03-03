@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Img from "../assets/note1.jpg";
 import AddNotes from "./AddNotes";
-import axios from "axios";
 import { toast } from "react-toastify";
+import Navbar from "./Navbar";
 
 const Notes = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -21,15 +21,37 @@ const Notes = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  const getTokenFromLocalStorage = () => {
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      return userData.token;
+    }
+    return null; // Return null if user data is not found or token is missing
+  };
+  
   useEffect(() => {
     const fetchNotes = async () => {
+      const token = getTokenFromLocalStorage();
+      console.log("Token",token);
+      
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/note/get-notes"
+
+        const response = await fetch(
+          "http://localhost:5000/api/note/get-notes",
+          {
+            method: "GET",
+            headers:{
+              "Content-Type":"application/json",
+              Authorization: `Bearer ${token}`
+            }
+          }
         );
-        console.log(response.data);
-        setNotes(response.data);
+        if (!response.ok) {
+          throw new Error("Failed to fetch notes");
+        }
+        const data = await response.json();
+        setNotes(data);
         toast.success("Data fetched successfully");
       } catch (error) {
         console.error(error);
@@ -42,19 +64,28 @@ const Notes = () => {
 
   const handleDelete = async (noteId) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:5000/api/note/delete-notes/${noteId}`
-      );
-      if (response.status === 200) {
-        toast.success("Note Deleted Successfully");
-        setNotes(notes.filter((note) => note.id !== noteId));
-      } else {
-        console.error(
-          "Error occurred while deleting note:",
-          response.data.message
-        );
-        toast.error("Error occurred while deleting note");
+      const token = getTokenFromLocalStorage();
+      
+      if (!token) {
+        console.error("User not authenticated");
+        return;
       }
+
+      const response = await fetch(
+        `http://localhost:5000/api/note/delete-notes/${noteId}`,
+        {
+          method: "DELETE",
+          headers:{
+            "Content-Type":"application/json",
+            Authorization: `Bearer ${token}`
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete note");
+      }
+      toast.success("Note Deleted Successfully");
+      setNotes(notes.filter((note) => note.id !== noteId));
     } catch (error) {
       console.error("Error deleting note:", error);
       toast.error("Error occurred while deleting note");
@@ -63,19 +94,27 @@ const Notes = () => {
 
   const handleEdit = async (noteId) => {
     try {
-      const response = await axios.put(
+      const token = getTokenFromLocalStorage();
+      
+      const response = await fetch(
         `http://localhost:5000/api/note/update-notes/${noteId}`,
-        formData
+        {
+          method: "PUT",
+          headers:{
+            "Content-Type":"application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(formData),
+        }
       );
-      console.log(response);
-      if (response) {
-        toast.success("Note Updated Successfully");
-        setEditNoteId(null); // Reset editNoteId after successful update
-      } else {
-        toast.error("Error occurred");
+      if (!response.ok) {
+        throw new Error("Failed to update note");
       }
+      toast.success("Note Updated Successfully");
+      setEditNoteId(null); // Reset editNoteId after successful update
     } catch (error) {
       console.error("Error updating note:", error);
+      toast.error("Error occurred while updating note");
     }
   };
 
@@ -92,7 +131,9 @@ const Notes = () => {
   };
 
   return (
-    <div className="bg-red-200 h-[2000px] mt-0">
+    <div>
+      <Navbar/>
+      <div className="bg-red-200 h-[2000px] mt-0">
       <h1 className="flex justify-center text-center font-extrabold text-3xl pt-10 text-yellow-50">
         Your Notes Collection
       </h1>
@@ -181,13 +222,9 @@ const Notes = () => {
           </div>
         </div>
       ))}
-
-      <div className="pt-[-10px] flex flex-wrap justify-center bg-red-200 ">
-        <div className="ml-10 pb-5">
-          <AddNotes />
-        </div>
-      </div>
     </div>
+    </div>
+    
   );
 };
 

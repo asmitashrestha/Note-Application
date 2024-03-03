@@ -1,73 +1,73 @@
 import React, { useState } from 'react';
 import Img from '../assets/note1.jpg';
 import { IoIosAddCircle } from "react-icons/io";
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 const AddNotes = () => {
+  const [user,setUser] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false);
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    status: '',
-    noteId:''// Change this to hold file object
+    status: ''
   });
 
   const toggleForm = () => {
     setIsFormOpen(!isFormOpen);
   };
 
- 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const getTokenFromLocalStorage = () => {
+    const userDataString = localStorage.getItem("userData");
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      return userData.token;
+    }
+    return null; // Return null if user data is not found or token is missing
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Fetch userId from localStorage
-      const userId = localStorage.getItem('userId');
-      console.log(userId);
-  
-      // Check if userId is available
-      if (!userId) {
-        console.error('User ID not found in localStorage');
-        return;
-      }
-  
-      const response = await axios.post(
-        "http://localhost:5000/api/note/create-notes",
-        {
-          ...formData,
-          user_id: userId // Include the user_id in the request payload
-        }
-      );
-  
-      console.log(response);
-      if (response.data.noteId) {
-        // If the response contains noteId, set it in formData
-        setFormData({ ...formData, noteId: response.data.noteId } as any);
-      }
-      if (response) {
+      const token = getTokenFromLocalStorage()
+      console.log("Token add", token);
+      
+      const response = await fetch("http://localhost:5000/api/note/create-notes", {
+        method: 'POST',
+        headers:{
+          "Content-Type":"application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
         toast.success("Note Created Successfully");
         navigate('/');
       } else {
-        toast.error("Error occurred");
+        toast.error(data.message || "Error occurred");
       }
     } catch (error) {
       console.error("Error creating note:", error);
     }
   };
-  
+
   return (
-    <div className='flex'>
+    <div>
+      <Navbar/>
+      <div className='flex'>
       <div className="w-[350px] h-[350px] p-10 bg-gray-200 rounded-3xl m-3 mt-20">
         <img src={Img} alt="img" className='h-[120px] w-[450px] ' />
         <div className="justify-center text-center">
-          <button onClick={toggleForm} >
+          <button onClick={toggleForm}>
             <IoIosAddCircle className='text-6xl relative  top-5' />
           </button>
           <h1 className='text-pink-900 font-bold text-2xl mt-10'>Add Collection</h1>
@@ -76,10 +76,6 @@ const AddNotes = () => {
       {isFormOpen && (
         <div className="w-[350px] h-[410px] bg-gray-200 rounded-3xl p-4 mt-10">
           <form onSubmit={handleSubmit}>
-            {/* <div className="flex">
-              <label htmlFor="image" className='mb-4 mr-2 font-semibold'>Image:</label>
-              <input type="file" id="image" name="image" accept="image/*" onChange={handleChange} />
-            </div> */}
             <div className="flex mb-4">
               <label htmlFor="title" className='font-semibold mr-2'>Title: </label>
               <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} className='rounded p-1.5 w-72' />
@@ -100,8 +96,9 @@ const AddNotes = () => {
       )}
 
     </div>
+    </div>
+    
   );
 };
 
 export default AddNotes;
-

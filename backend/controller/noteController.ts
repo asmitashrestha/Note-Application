@@ -1,65 +1,46 @@
 const db = require("../models");
 
 // create a new notes
-// exports.createNotes = async (req, res, next) => {
-
-//   try {
-//     const userId = req.body.user_id;
-//     const user = await db.User.findByPk(userId);
-//     if(!user){
-//       console.error("User not found")
-//       return
-//     }
-//     const { title, description, status } = req.body;
-
-//     if (!title || !description || !status) {
-//       return res.status(400).json({
-//         message: "All fields are required.",
-//       });
-//     }
-
-//     const newNote = await db.Note.create({
-//       title: title,
-//       description: description,
-//       // user_id: user_id,
-//       status: status,
-//       // noteId:noteId,
-//       user_id: userId,
-//     });
-
-//     res.status(201).json(newNote);
-//   } catch (error) {
-//     console.error("Error creating note:", error);
-//     res.status(500).json({
-//       message: "Internal Server Error",
-//     });
-//   }
-// };
-
 exports.createNotes = async (req, res, next) => {
   try {
-    const userId = req.body.user_id;
+    // Extract user ID from the request object (set by middleware)
+    const userId = req.userId;
+
+    // Check if user ID is available
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required.",
+      });
+    }
+
+    // Retrieve user based on the user ID
     const user = await db.User.findByPk(userId);
     if (!user) {
       console.error("User not found");
-      return;
+      return res.status(404).json({
+        message: "User not found.",
+      });
     }
+
+    // Extract note details from the request body
     const { title, description, status } = req.body;
 
+    // Validate note details
     if (!title || !description || !status) {
       return res.status(400).json({
         message: "All fields are required.",
       });
     }
 
+    // Create the note and associate it with the user
     const newNote = await db.Note.create({
       title: title,
       description: description,
       status: status,
-      user_id: userId,
+      user_id: userId, // Associate note with the user
     });
 
-    // Include noteId in the response
+    // Respond with the created note including its ID
     res.status(201).json({
       ...newNote.toJSON(),
       noteId: newNote.id // Assuming the primary key of Note model is 'id'
@@ -73,13 +54,41 @@ exports.createNotes = async (req, res, next) => {
 };
 
 
+
+
 // get all created notes
+// exports.getAllNotes = async (req, res) => {
+//   try {
+//     const allNotes = await db.Note.findAll();
+//     res.status(200).json(allNotes);
+//   } catch (error) {
+//     console.error("Error getting all notes:", error);
+//     res.status(500).json({
+//       message: "Internal Server Error",
+//     });
+//   }
+// };
+
 exports.getAllNotes = async (req, res) => {
   try {
-    const allNotes = await db.Note.findAll();
-    res.status(200).json(allNotes);
+    // Retrieve the user ID from the request
+    const userId = req.userId;
+
+    // Check if user ID is available
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized User",
+      });
+    }
+
+    // Fetch all notes associated with the user
+    const userNotes = await db.Note.findAll({
+      where: { user_id: userId }, // Filter notes by user ID
+    });
+
+    res.status(200).json(userNotes);
   } catch (error) {
-    console.error("Error getting all notes:", error);
+    console.error("Error getting user's notes:", error);
     res.status(500).json({
       message: "Internal Server Error",
     });
